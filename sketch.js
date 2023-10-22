@@ -4,6 +4,7 @@ var topGround;
 var ball;
 var paddle;
 var score = 0;
+var gameEnded = false;
 
 function preload() {
   bgImg = loadImage("assets/bg.png");
@@ -19,7 +20,6 @@ function setup() {
   topGround = createSprite(500, 10, 1000, 20);
   topGround.visible = true;
 
-  
   var leftGround = createSprite(10, height / 2, 20, 900);
   leftGround.visible = true;
 
@@ -42,55 +42,59 @@ function setup() {
 function draw() {
   background(bgImg);
 
-  if (keyDown("LEFT_ARROW")) {
-    paddle.velocity.x = -5;
-  } else if (keyDown("RIGHT_ARROW")) {
-    paddle.velocity.x = 5;
-  } else {
-    paddle.velocity.x = 0;
-  }
-
-  ball.bounce(topGround);
-  ball.bounce(bottomGround);
-  ball.bounce(paddle);
-
-  if (ball.position.x <= 0) {
-    ball.velocity.x *= -1; 
-  }
-
-  if (ball.position.x >= width) {
-    ball.velocity.x *= -1; 
-  }
-
-  
-  if (ball.overlap(paddle)) {
-    var collision = ball.collide(paddle);
-
-    
-    if (collision) {
-      if (ball.position.x < paddle.position.x) {
-        
-        ball.velocity.x = -5;
-        ball.velocity.y = -5;
-      } else {
-       
-        ball.velocity.x = 5;
-        ball.velocity.y = -5;
-      }
-      score++;
+  if (!gameEnded) { // Check if the game has not ended
+    if (keyDown("LEFT_ARROW")) {
+      paddle.velocity.x = -5;
+    } else if (keyDown("RIGHT_ARROW")) {
+      paddle.velocity.x = 5;
+    } else {
+      paddle.velocity.x = 0;
     }
-  }
 
-  
-  if (ball.overlap(bottomGround)) {
-    ball.velocity.y = 5; 
-    score--;
+    ball.bounce(topGround);
+    ball.bounce(bottomGround);
+    ball.bounce(paddle);
+
+    if (ball.position.x <= 0) {
+      ball.velocity.x *= -1;
+    }
+
+    if (ball.position.x >= width) {
+      ball.velocity.x *= -1;
+    }
+
+    if (ball.overlap(paddle)) {
+      var collision = ball.collide(paddle);
+
+      if (collision) {
+        if (ball.position.x < paddle.position.x) {
+          ball.velocity.x = -5;
+          ball.velocity.y = -5;
+        } else {
+          ball.velocity.x = 5;
+          ball.velocity.y = -5;
+        }
+        score++;
+      }
+    }
+
+    if (ball.overlap(bottomGround)) {
+      ball.velocity.y = 5;
+      score--;
+      if (score < 0) {
+        gameEnded = true; // Set the game state to ended
+      }
+    }
   }
 
   drawSprites();
 
-  
   fill(255);
   textSize(20);
   text("Score: " + score, 20, 30);
+
+  if (gameEnded) {
+    textSize(50);
+    text("Game Over", width / 2 - 100, height / 2);
+  }
 }
