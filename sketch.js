@@ -1,59 +1,96 @@
 var bg, bgImg;
 var bottomGround;
 var topGround;
-var balloon, balloonImg;
+var ball;
 var paddle;
+var score = 0;
 
-function preload(){
+function preload() {
   bgImg = loadImage("assets/bg.png");
-  balloonImg = loadAnimation("assets/balloon1.png","assets/balloon2.png","assets/balloon3.png");
+  ballImg = loadAnimation("assets/ball.png");
 }
 
-function setup(){
-  
-  bg = createSprite(165, 485, 1, 1);
-  bg.addImage(bgImg);
-  bg.scale = 1.3;
+function setup() {
+  createCanvas(1000, 900);
 
- 
-  bottomGround = createSprite(200, 390, 800, 20);
-  bottomGround.visible = false;
+  bottomGround = createSprite(500, 850, 1000, 20);
+  bottomGround.visible = true;
 
-  topGround = createSprite(200, 10, 800, 20);
-  topGround.visible = false;
+  topGround = createSprite(500, 10, 1000, 20);
+  topGround.visible = true;
 
   
-  balloon = createSprite(100, 200, 20, 20);
-  balloon.addAnimation("balloon", balloonImg);
-  balloon.scale = 0.2;
-  
- 
-  paddle = createSprite(200, 380, 100, 10);
+  var leftGround = createSprite(10, height / 2, 20, 900);
+  leftGround.visible = true;
+
+  var rightGround = createSprite(990, height / 2, 20, 900);
+  rightGround.visible = true;
+
+  ball = createSprite(100, 200, 20, 20);
+  ball.addAnimation("ball", ballImg);
+  ball.scale = 0.08;
+  ball.setCollider("circle", 0, 0, 70);
+  ball.velocity.y = 2;
+  ball.maxSpeed = 10;
+
+  paddle = createSprite(200, 800, 100, 10);
+  paddle.visible = true;
+
+  score = 0;
 }
 
 function draw() {
-  background("black");
-  
-  
-  if (keyDown("space")) {
-    balloon.velocityY = -6;
+  background(bgImg);
+
+  if (keyDown("LEFT_ARROW")) {
+    paddle.velocity.x = -5;
+  } else if (keyDown("RIGHT_ARROW")) {
+    paddle.velocity.x = 5;
+  } else {
+    paddle.velocity.x = 0;
   }
 
- 
-  balloon.velocityY = balloon.velocityY + 2;
-  
-  
-  if (keyDown(LEFT_ARROW) && paddle.x > 50) {
-    paddle.x -= 5;
+  ball.bounce(topGround);
+  ball.bounce(bottomGround);
+  ball.bounce(paddle);
+
+  if (ball.position.x <= 0) {
+    ball.velocity.x *= -1; 
   }
-  if (keyDown(RIGHT_ARROW) && paddle.x < 350) {
-    paddle.x += 5;
+
+  if (ball.position.x >= width) {
+    ball.velocity.x *= -1; 
   }
 
   
-  if (balloon.isTouching(paddle)) {
-    balloon.velocityY = -balloon.velocityY; 
+  if (ball.overlap(paddle)) {
+    var collision = ball.collide(paddle);
+
+    
+    if (collision) {
+      if (ball.position.x < paddle.position.x) {
+        
+        ball.velocity.x = -5;
+        ball.velocity.y = -5;
+      } else {
+       
+        ball.velocity.x = 5;
+        ball.velocity.y = -5;
+      }
+      score++;
+    }
+  }
+
+  
+  if (ball.overlap(bottomGround)) {
+    ball.velocity.y = 5; 
+    score--;
   }
 
   drawSprites();
+
+  
+  fill(255);
+  textSize(20);
+  text("Score: " + score, 20, 30);
 }
